@@ -5,8 +5,8 @@ A tiny microservice for getting weather information.
 ## Setup
 1. Create an OpenWeatherMap account at https://home.openweathermap.org/users/sign_up.
 1. Go to your account page to [get your API key](https://home.openweathermap.org/api_keys).
-1. Enter your API key in the `tinyweather.py` file.
-1. Run the `tinyweather.py` service locally.
+1. Enter your API key in the [`tinyweather.py`](https://github.com/jxcrw/tinyweather/blob/main/tinyweather.py) file.
+1. Run the [`tinyweather.py`](https://github.com/jxcrw/tinyweather/blob/main/tinyweather.py) service locally.
 
 
 ## Requesting Weather Data
@@ -31,10 +31,10 @@ print(f"Sending request: {city}")
 socket.send_string(city)
 ```
 
-_(See the `request.py` file for a full example.)_
+_(See the [`request.py`](https://github.com/jxcrw/tinyweather/blob/main/request.py) file for a full example.)_
 
 ## Receiving Weather Data
-After sending a request to the tinyweather service, listen for a weather summary on the same socket.
+After sending a request to the tinyweather service, listen for a weather summary on the same ZeroMQ socket.
 
 ```python
 # Get response.
@@ -54,7 +54,7 @@ The weather summary will be returned as a JSON object having the following forma
 
 If no weather information is available for the specified city, tinyweather returns an empty JSON object.
 
-_(See the `request.py` file for a full example.)_
+_(See the [`request.py`](https://github.com/jxcrw/tinyweather/blob/main/request.py) file for a full example.)_
 
 
 ## UML Sequence Diagram
