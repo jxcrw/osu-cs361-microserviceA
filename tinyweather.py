@@ -6,31 +6,35 @@ import requests
 import zmq
 
 
-# Config
-API_KEY = 'e72c934f51629bffbdf40b18ad0151bb'
+# ┌─────────────────────────────────────────────────────────────────────────────
+# │ CONFIG
+# └─────────────────────────────────────────────────────────────────────────────
+PORT_NUMBER = 5555
+OPENWEATHERMAP_API_KEY = 'e72c934f51629bffbdf40b18ad0151bb'
 RAIN_CATEGORIES = ['Thunderstorm', 'Drizzle', 'Rain']
 
 
-# Create socket.
-context = zmq.Context()
-socket = context.socket(zmq.REP)
-socket.bind("tcp://*:5555")
+# ┌─────────────────────────────────────────────────────────────────────────────
+# │ Functions
+# └─────────────────────────────────────────────────────────────────────────────
+def open_socket(port_number: int):
+    """Open a socket for communication on the specified port number."""
+    context = zmq.Context()
+    socket = context.socket(zmq.REP)
+    socket.bind(f'tcp://*:{port_number}')
+    return socket
 
 
-# Process requests.
-print('Waiting for requests...')
-while True:
-    # Get request from client.
-    city = socket.recv_string()
-    print(f"Received request: {city}")
+def summarize_weather(city: str) -> str:
+    """Create a tiny JSON summary of the current weather in the specified city."""
+    # Get weather data from OpenWeatherMap API.
+    weather_summary = dict()
+    url = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHERMAP_API_KEY}'
+    response = requests.get(url)
 
-    # Get weather from OpenWeatherMap.
-    URL = f'https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}'
-    response = requests.get(URL)
     if response.status_code == 200:
-        data = response.json()
-
         # Parse weather data.
+        data = response.json()
         weather = data['weather'][0]['main']
         time_current = data['dt']
         time_sunrise = data['sys']['sunrise']
@@ -40,10 +44,28 @@ while True:
         is_raining = weather in RAIN_CATEGORIES
         is_day = time_sunrise <= time_current <= time_sunset
         weather_summary = {'city': city, 'is_day': is_day, 'is_raining': is_raining}
-        weather_summary_json = json.dumps(weather_summary)
     else:
         print("Error in OpenWeatherMap HTTP request.")
 
-    # Send response back to client.
-    socket.send_json(weather_summary_json)
+    weather_summary_json = json.dumps(weather_summary)
+    return weather_summary_json
 
+
+def process_requests(socket) -> None:
+    """Process requests to the tinyweather microservice."""
+    print('Waiting for requests...')
+    while True:
+        # Get request from client.
+        city = socket.recv_string()
+        print(f"Received request: {city}")
+
+        # Build weather summary.
+        weather_summary_json = summarize_weather(city)
+
+        # Send weather summary back to client.
+        socket.send_json(weather_summary_json)
+
+
+if __name__ == '__main__':
+    socket = open_socket(PORT_NUMBER)
+    process_requests(socket)
