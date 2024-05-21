@@ -5,8 +5,8 @@ import zmq
 
 
 # Config.
-city = "Las Vegas"
 PORT_NUMBER = 5555
+city = "Las Vegas"
 
 # Create socket.
 print("Connecting to server...")
